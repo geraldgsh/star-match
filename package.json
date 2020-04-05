@@ -19,6 +19,7 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "parser": "babel-eslint",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -32,6 +33,7 @@
     ]
   },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-plugin-import": "^2.20.2",
