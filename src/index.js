@@ -1,7 +1,38 @@
+/* eslint-disable no-undef */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
+
+// Math science
+const utils = {
+  // Sum an array
+  sum: arr => arr.reduce((acc, curr) => acc + curr, 0),
+
+  // create an array of numbers between min and max (edges included)
+  range: (min, max) => Array.from({ length: max - min + 1 }, (_, i) => min + i),
+
+  // pick a random number between min and max (edges included)
+  random: (min, max) => min + Math.floor(Math.random() * (max - min + 1)),
+
+  // Given an array of numbers and a max...
+  // Pick a random sum (< max) from the set of all available sums in arr
+  randomSumIn: (arr, max) => {
+    const sets = [[]];
+    const sums = [];
+    for (let i = 0; i < arr.length; i += 1) {
+      for (let j = 0, len = sets.length; j < len; j += 1) {
+        const candidateSet = sets[j].concat(arr[i]);
+        const candidateSum = utils.sum(candidateSet);
+        if (candidateSum <= max) {
+          sets.push(candidateSet);
+          sums.push(candidateSum);
+        }
+      }
+    }
+    return sums[utils.random(0, sums.length - 1)];
+  },
+};
 
 const StarsDisplay = props => (
   <>
@@ -14,7 +45,7 @@ const StarsDisplay = props => (
 const PlayNumber = props => (
   <button
     className="number"
-    style={{backgroundColor: colors[props.status]}}
+    style={{ backgroundColor: colors[props.status] }}
     onClick={() => props.onClick(props.number, props.status)}
   >
     {props.number}
@@ -22,36 +53,36 @@ const PlayNumber = props => (
 );
 
 const PlayAgain = props => (
-	<div className="game-done">
-  	<div 
-    	className="message"
-      style={{ color: props.gameStatus === 'lost' ? 'red' : 'green'}}
+  <div className="game-done">
+    <div
+      className="message"
+      style={{ color: props.gameStatus === 'lost' ? 'red' : 'green' }}
     >
-  	  {props.gameStatus === 'lost' ? 'Game Over' : 'Nice'}
-  	</div>
-	  <button onClick={props.onClick}>Play Again</button>
-	</div>
+      {props.gameStatus === 'lost' ? 'Game Over' : 'Nice'}
+    </div>
+    <button onClick={props.onClick}>Play Again</button>
+  </div>
 );
 
-const useGameState = timeLimit => {
-  const [stars, setStars] = useState(utils.random(1, 9));
-  const [availableNums, setAvailableNums] = useState(utils.range(1, 9));
-  const [candidateNums, setCandidateNums] = useState([]);
-  const [secondsLeft, setSecondsLeft] = useState(10);
+const useGameState = () => {
+  const [stars, setStars] = React.useState(utils.random(1, 9));
+  const [availableNums, setAvailableNums] = React.useState(utils.range(1, 9));
+  const [candidateNums, setCandidateNums] = React.useState([]);
+  const [secondsLeft, setSecondsLeft] = React.useState(10);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (secondsLeft > 0 && availableNums.length > 0) {
       const timerId = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000);
       return () => clearTimeout(timerId);
     }
   });
 
-  const setGameState = (newCandidateNums) => {
+  const setGameState = newCandidateNums => {
     if (utils.sum(newCandidateNums) !== stars) {
-			setCandidateNums(newCandidateNums);
+      setCandidateNums(newCandidateNums);
     } else {
       const newAvailableNums = availableNums.filter(
-        n => !newCandidateNums.includes(n)
+        n => !newCandidateNums.includes(n),
       );
       setStars(utils.randomSumIn(newAvailableNums, 9));
       setAvailableNums(newAvailableNums);
@@ -59,7 +90,9 @@ const useGameState = timeLimit => {
     }
   };
 
-  return { stars, availableNums, candidateNums, secondsLeft, setGameState };
+  return {
+    stars, availableNums, candidateNums, secondsLeft, setGameState,
+  };
 };
 
 const Game = props => {
@@ -72,9 +105,9 @@ const Game = props => {
   } = useGameState();
 
   const candidatesAreWrong = utils.sum(candidateNums) > stars;
-  const gameStatus = availableNums.length === 0 
-  	? 'won'
-    : secondsLeft === 0 ? 'lost' : 'active'
+  const gameStatus = availableNums.length === 0
+    ? 'won'
+    : secondsLeft === 0 ? 'lost' : 'active';
 
   const numberStatus = number => {
     if (!availableNums.includes(number)) {
@@ -109,9 +142,9 @@ const Game = props => {
       <div className="body">
         <div className="left">
           {gameStatus !== 'active' ? (
-          	<PlayAgain onClick={props.startNewGame} gameStatus={gameStatus} />
+            <PlayAgain onClick={props.startNewGame} gameStatus={gameStatus}/>
           ) : (
-          	<StarsDisplay count={stars} />
+            <StarsDisplay count={stars}/>
           )}
         </div>
         <div className="right">
@@ -131,9 +164,9 @@ const Game = props => {
 };
 
 const StarMatch = () => {
-	const [gameId, setGameId] = useState(1);
-	return <Game key={gameId} startNewGame={() => setGameId(gameId + 1)}/>;
-}
+  const [gameId, setGameId] = React.useState(1);
+  return <Game key={gameId} startNewGame={() => setGameId(gameId + 1)} />;
+};
 
 // Color Theme
 const colors = {
@@ -143,41 +176,9 @@ const colors = {
   candidate: 'deepskyblue',
 };
 
-// Math science
-const utils = {
-  // Sum an array
-  sum: arr => arr.reduce((acc, curr) => acc + curr, 0),
-
-  // create an array of numbers between min and max (edges included)
-  range: (min, max) => Array.from({ length: max - min + 1 }, (_, i) => min + i),
-
-  // pick a random number between min and max (edges included)
-  random: (min, max) => min + Math.floor(Math.random() * (max - min + 1)),
-
-  // Given an array of numbers and a max...
-  // Pick a random sum (< max) from the set of all available sums in arr
-randomSumIn: (arr, max) => {
-    const sets = [[]];
-    const sums = [];
-    for (let i = 0; i < arr.length; i++) {
-      for (let j = 0, len = sets.length; j < len; j++) {
-      const candidateSet = sets[j].concat(arr[i]);
-      const candidateSum = utils.sum(candidateSet);
-      if (candidateSum <= max) {
-        sets.push(candidateSet);
-        sums.push(candidateSum);
-      }
-    }
-  }
-  return sums[utils.random(0, sums.length - 1)];
-  },
-};
-
 ReactDOM.render(
-  <React.StrictMode>
-    <StarMatch />
-  </React.StrictMode>,
-  document.getElementById('root')
+  <StarMatch />,
+  document.getElementById('root'),
 );
 
 // If you want your app to work offline and load faster, you can change
